@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Dice Roler L5R</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/x-icon" href="/imgs/d10.png">
+</head>
+<body>
+  <div class="container">
+    <h1>Probabilidade de rolagens</h1>
+
+    <label for="x">X (dados rolados): <input type="number" id="x" value="3" min="1" /></label>
+    <label for="y">Y (dados mantidos): <input type="number" id="y" value="3" min="1" /></label>
+    <label for="bonus">Bônus: <input type="number" id="bonus" value="0" /></label>
+    <label for="tn">TN (target number): <input type="number" id="tn" value="20" /></label>
+
+    <button onclick="simular()">Simular</button>
+
+    <div id="resultado"></div>
+  </div>
+
+  <script>
+    function rollDieWithExplosions() {
+      let total = 0;
+      while (true) {
+        const roll = Math.floor(Math.random() * 10) + 1;
+        total += roll;
+        if (roll < 10) break;
+      }
+      return total;
+    }
+
+    function simulateL5RRoll(x, y, bonus = 0, tn = 0, simulations = 1000000) {
+      let successCount = 0;
+      let sumOfTotals = 0;
+
+      for (let i = 0; i < simulations; i++) {
+        let rolled = [];
+        for (let j = 0; j < x; j++) {
+          rolled.push(rollDieWithExplosions());
+        }
+        rolled.sort((a, b) => b - a);
+        let kept = rolled.slice(0, y);
+        let total = kept.reduce((acc, val) => acc + val, 0) + bonus;
+        sumOfTotals += total;
+        if (total >= tn) successCount++;
+      }
+
+      const successRate = (successCount / simulations) * 100;
+      const average = sumOfTotals / simulations;
+
+      return { successRate, average };
+    }
+
+    function simular() {
+      const x = parseInt(document.getElementById("x").value);
+      const y = parseInt(document.getElementById("y").value);
+      const bonus = parseInt(document.getElementById("bonus").value);
+      const tn = parseInt(document.getElementById("tn").value);
+
+      const { successRate, average } = simulateL5RRoll(x, y, bonus, tn);
+
+      document.getElementById("resultado").innerHTML = `
+        <strong>Chance de sucesso:</strong> ${successRate.toFixed(2)}%<br>
+        <strong>Média da rolagem:</strong> ${average.toFixed(2)}
+      `;
+    }
+  </script>
+</body>
+</html>
