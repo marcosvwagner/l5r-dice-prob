@@ -1,19 +1,38 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Dice Roler L5R</title>
+  <meta charset="UTF-8" />
+  <title>Dice Roller L5R</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/x-icon" href="/imgs/d10.png">
+  <link rel="icon" type="image/x-icon" href="/imgs/d10.png" />
 </head>
 <body>
+  <div class="sidebar" id="sidebar">
+    <h2>Rolações Salvas</h2>
+    <ul id="savedRolls"></ul>
+    <button onclick="addSavedRoll()">Salvar rolagem</button>
+  </div>
+
+  <button class="floating-btn" id="toggleSidebarBtn">Esconder</button>
+
   <div class="container">
     <h1>Probabilidade de rolagens</h1>
 
-    <label for="x">X (dados rolados): <input type="number" id="x" value="3" min="1" /></label>
-    <label for="y">Y (dados mantidos): <input type="number" id="y" value="3" min="1" /></label>
-    <label for="bonus">Bônus: <input type="number" id="bonus" value="0" /></label>
-    <label for="tn">TN (target number): <input type="number" id="tn" value="20" /></label>
+    <label for="x">X (dados rolados):
+      <input type="number" id="x" value="3" min="1" />
+    </label>
+
+    <label for="y">Y (dados mantidos):
+      <input type="number" id="y" value="3" min="1" />
+    </label>
+
+    <label for="bonus">Bônus:
+      <input type="number" id="bonus" value="0" />
+    </label>
+
+    <label for="tn">TN (target number):
+      <input type="number" id="tn" value="20" />
+    </label>
 
     <button onclick="simular()">Simular</button>
 
@@ -21,6 +40,14 @@
   </div>
 
   <script>
+    const toggleBtn = document.getElementById('toggleSidebarBtn');
+    const sidebar = document.getElementById('sidebar');
+
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      toggleBtn.textContent = sidebar.classList.contains('hidden') ? 'Mostrar' : 'Esconder';
+    });
+
     function rollDieWithExplosions() {
       let total = 0;
       while (true) {
@@ -31,7 +58,7 @@
       return total;
     }
 
-    function simulateL5RRoll(x, y, bonus = 0, tn = 0, simulations = 1000000) {
+    function simulateL5RRoll(x, y, bonus = 0, tn = 0, simulations = 100000) {
       let successCount = 0;
       let sumOfTotals = 0;
 
@@ -66,6 +93,71 @@
         <strong>Média da rolagem:</strong> ${average.toFixed(2)}
       `;
     }
+
+    function addSavedRoll() {
+      const x = parseInt(document.getElementById("x").value);
+      const y = parseInt(document.getElementById("y").value);
+      const bonus = parseInt(document.getElementById("bonus").value);
+
+      const name = prompt("Digite um nome para essa rolagem:");
+      if (!name) return;
+
+      const expression = `${x}k${y}${bonus !== 0 ? (bonus > 0 ? `+${bonus}` : ` e${bonus}`) : ''}`;
+
+      const rolls = JSON.parse(localStorage.getItem("savedRolls") || "[]");
+
+      if (rolls.some(r => r.name === name)) {
+        alert("Já existe uma rolagem com esse nome.");
+        return;
+      }
+
+      rolls.push({ name, expression });
+      localStorage.setItem("savedRolls", JSON.stringify(rolls));
+
+      renderSavedRolls();
+    }
+
+    function renderSavedRolls() {
+      const rolls = JSON.parse(localStorage.getItem("savedRolls") || "[]");
+      const list = document.getElementById("savedRolls");
+      list.innerHTML = "";
+
+      rolls.forEach((roll, index) => {
+        const li = document.createElement("li");
+
+        li.innerHTML = `
+          <strong>${roll.name}</strong><br>
+          <span>${roll.expression}</span><br>
+          <button onclick="loadRoll(${index})">Carregar</button>
+          <button onclick="deleteRoll(${index})">Excluir</button>
+        `;
+
+        list.appendChild(li);
+      });
+    }
+
+    function loadRoll(index) {
+      const rolls = JSON.parse(localStorage.getItem("savedRolls") || "[]");
+      const roll = rolls[index];
+
+      const regex = /^(\d+)k(\d+)(?: e([+-]?\d+))?$/;
+      const match = roll.expression.match(regex);
+
+      if (match) {
+        document.getElementById("x").value = parseInt(match[1]);
+        document.getElementById("y").value = parseInt(match[2]);
+        document.getElementById("bonus").value = match[3] ? parseInt(match[3]) : 0;
+      }
+    }
+
+    function deleteRoll(index) {
+      const rolls = JSON.parse(localStorage.getItem("savedRolls") || "[]");
+      rolls.splice(index, 1);
+      localStorage.setItem("savedRolls", JSON.stringify(rolls));
+      renderSavedRolls();
+    }
+
+    window.addEventListener("load", renderSavedRolls);
   </script>
 </body>
 </html>
