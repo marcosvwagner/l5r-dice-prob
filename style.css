@@ -199,3 +199,30 @@ button:hover {
 .floating-btn:hover {
   background-color: var(--color-primary-hover);
 }
+
+
+.language-box {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: var(--background-container);
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.language-box label {
+  background-color: var(--border-input);
+  font-family: sans-serif;
+  font-size: 14px;
+}
+
+.language-box select {
+  background-color: var(--background-input);
+  color: var(--text-primary);
+  margin-left: 6px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid var(--border-input);
+}
