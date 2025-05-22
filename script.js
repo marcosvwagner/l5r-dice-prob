@@ -60,7 +60,11 @@ const sidebar = document.getElementById('sidebar');
 
 toggleBtn.addEventListener('click', () => {
   sidebar.classList.toggle('hidden');
-  toggleBtn.textContent = sidebar.classList.contains('hidden') ? 'Mostrar' : 'Esconder';
+
+  const lang = document.getElementById("language").value;
+  const t = translations[lang];
+
+  toggleBtn.textContent = sidebar.classList.contains('hidden') ? t.show : t.hide;
 });
 
 function rollDieWithExplosions() {
