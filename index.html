@@ -15,11 +15,13 @@
 
   <!-- Caixinha de idioma no topo direito -->
   <div class="language-box">
-  <select id="language" onchange="changeLanguage()">
-    <option value="pt" selected>🇧🇷 PT</option>
-    <option value="en">🇬🇧 EN</option>
-  </select>
-</div>
+    <select id="language" onchange="changeLanguage()">
+      <option value="pt" selected>🇧🇷 PT</option>
+      <option value="en">🇺🇸 EN</option>
+    </select>
+  </div>
+
+
 
   <div class="sidebar hidden" id="sidebar">
     <h2 id="saved-rolls-title">Rolagens Salvas</h2>
@@ -27,11 +29,27 @@
     <button id="save-roll-btn" onclick="addSavedRoll()">Salvar rolagem</button>
   </div>
 
+
   <button class="floating-btn" id="toggleSidebarBtn">Mostrar</button>
 
   <div class="container">
 
-    <h1 id="title">Probabilidade de rolagens</h1>
+
+    <div class="header-with-config">
+      <h1 id="title">Probabilidade de Rolagens</h1>
+      <button id="openConfigBtn" aria-label="Configurações" class="config-btn">⚙️</button>
+    </div>
+    <div id="configModal" class="modal">
+      <div class="modal-content">
+        <div class="label-explode">
+          <label for="explode">Explode</label>
+          <input type="number" id="explode" value="10" min="2" max="10" title="Valor de Explosão" />
+        </div>
+      </div>
+    </div>
+
+
+
 
     <label id="label-x" for="x">X (dados rolados):
       <input type="number" id="x" value="3" min="1" />
@@ -48,6 +66,12 @@
     <label id="label-tn" for="tn">NA (número alvo):
       <input type="number" id="tn" value="20" />
     </label>
+
+    <!-- <label id="label-explode" for="explode">Explode:
+      <input type="number" id="explode" value="10" min="2" max="10" />
+    </label> -->
+
+
 
     <button id="simulate-btn" onclick="simular()">Simular</button>
 

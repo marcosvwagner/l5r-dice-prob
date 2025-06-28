@@ -4,7 +4,7 @@ const translations = {
     saveRoll: "Salvar rolagem",
     hide: "Esconder",
     show: "Mostrar",
-    title: "Probabilidade de rolagens",
+    title: "Probabilidade de Rolagens",
     x: "X (dados rolados):",
     y: "Y (dados mantidos):",
     bonus: "Bônus:",
@@ -31,7 +31,6 @@ const translations = {
   },
 };
 
-
 function changeLanguage() {
   const lang = document.getElementById("language").value;
   const t = translations[lang];
@@ -40,7 +39,9 @@ function changeLanguage() {
   document.getElementById("save-roll-btn").textContent = t.saveRoll;
 
   const toggleBtn = document.getElementById("toggleSidebarBtn");
-  toggleBtn.textContent = toggleBtn.classList.contains("hidden") ? t.show : t.hide;
+  if (toggleBtn) {
+    toggleBtn.textContent = toggleBtn.classList.contains("hidden") ? t.show : t.hide;
+  }
 
   document.getElementById("label-x").childNodes[0].nodeValue = t.x + " ";
   document.getElementById("label-y").childNodes[0].nodeValue = t.y + " ";
@@ -50,41 +51,41 @@ function changeLanguage() {
   document.getElementById("simulate-btn").textContent = t.simulate;
   document.getElementById("title").textContent = t.title;
 
-  renderSavedRolls(); // Atualiza também os botões da lista salva
+  renderSavedRolls();
 }
-
-
 
 const toggleBtn = document.getElementById('toggleSidebarBtn');
 const sidebar = document.getElementById('sidebar');
 
-toggleBtn.addEventListener('click', () => {
-  sidebar.classList.toggle('hidden');
+if (toggleBtn && sidebar) {
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('hidden');
 
-  const lang = document.getElementById("language").value;
-  const t = translations[lang];
+    const lang = document.getElementById("language").value;
+    const t = translations[lang];
 
-  toggleBtn.textContent = sidebar.classList.contains('hidden') ? t.show : t.hide;
-});
+    toggleBtn.textContent = sidebar.classList.contains('hidden') ? t.show : t.hide;
+  });
+}
 
-function rollDieWithExplosions() {
+function rollDieWithExplosions(explode = 10) {
   let total = 0;
   while (true) {
     const roll = Math.floor(Math.random() * 10) + 1;
     total += roll;
-    if (roll < 10) break;
+    if (roll < explode) break;
   }
   return total;
 }
 
-function simulateL5RRoll(x, y, bonus = 0, tn = 0, simulations = 100000) {
+function simulateL5RRoll(x, y, bonus = 0, tn = 0, explode = 10, simulations = 100000) {
   let successCount = 0;
   let sumOfTotals = 0;
 
   for (let i = 0; i < simulations; i++) {
     let rolled = [];
     for (let j = 0; j < x; j++) {
-      rolled.push(rollDieWithExplosions());
+      rolled.push(rollDieWithExplosions(explode));
     }
     rolled.sort((a, b) => b - a);
     let kept = rolled.slice(0, y);
@@ -100,12 +101,19 @@ function simulateL5RRoll(x, y, bonus = 0, tn = 0, simulations = 100000) {
 }
 
 function simular() {
-  const x = parseInt(document.getElementById("x").value);
-  const y = parseInt(document.getElementById("y").value);
-  const bonus = parseInt(document.getElementById("bonus").value);
-  const tn = parseInt(document.getElementById("tn").value);
+  const x = parseInt(document.getElementById("x").value) || 0;
+  const y = parseInt(document.getElementById("y").value) || 0;
+  const bonus = parseInt(document.getElementById("bonus").value) || 0;
+  const tn = parseInt(document.getElementById("tn").value) || 0;
 
-  const { successRate, average } = simulateL5RRoll(x, y, bonus, tn);
+  const explodeInput = document.getElementById("explode");
+  let explode = parseInt(explodeInput.value);
+
+  if (isNaN(explode) || explode < 2) explode = 2;
+  if (explode > 10) explode = 10;
+  explodeInput.value = explode; // ← atualiza visualmente o valor no campo
+
+  const { successRate, average } = simulateL5RRoll(x, y, bonus, tn, explode);
 
   document.getElementById("resultado").innerHTML = `
     <strong>Chance de sucesso:</strong> ${successRate.toFixed(2)}%<br>
@@ -121,9 +129,7 @@ function addSavedRoll() {
   const name = prompt("Digite um nome para essa rolagem:");
   if (!name) return;
 
-  // Formato padrão: +N ou -N, sem ' e'
   const expression = `${x}k${y}${bonus !== 0 ? (bonus > 0 ? `+${bonus}` : `${bonus}`) : ''}`;
-
   const rolls = JSON.parse(localStorage.getItem("savedRolls") || "[]");
 
   if (rolls.some(r => r.name === name)) {
@@ -163,7 +169,6 @@ function loadRoll(index) {
   const rolls = JSON.parse(localStorage.getItem("savedRolls") || "[]");
   const roll = rolls[index];
 
-  // Regex ajustada para o formato: "3k6", "3k6+2" ou "3k6-1"
   const regex = /^(\d+)k(\d+)([+-]\d+)?$/;
   const match = roll.expression.match(regex);
 
@@ -181,4 +186,28 @@ function deleteRoll(index) {
   renderSavedRolls();
 }
 
-window.addEventListener("load", renderSavedRolls);
+window.addEventListener("load", () => {
+  changeLanguage(); // se tiver <select id="language">
+  renderSavedRolls();
+});
+
+const modal = document.getElementById("configModal");
+const openBtn = document.getElementById("openConfigBtn");
+const closeBtn = modal.querySelector(".close-btn");
+
+
+// Quando clicar no botão, abre o modal
+openBtn.onclick = () => {
+  if (modal.style.display === "block") {
+    modal.style.display = "none";
+  } else {
+    modal.style.display = "block";
+  }
+};
+
+// Quando clicar fora do conteúdo do modal, fecha também
+window.onclick = (event) => {
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
+};
